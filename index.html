@@ -1,0 +1,985 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101827">
+<title>MINDSPACE — Ruang untuk Memahami Diri</title>
+
+<style>
+:root {
+  --bg: #0d1421;
+  --panel: #151f30;
+  --panel2: #1b2940;
+  --text: #edf1fa;
+  --muted: #9ba9bf;
+  --line: rgba(255,255,255,.09);
+  --accent: #b7a5ff;
+  --accent2: #8bd5ca;
+  --danger: #ff9d9d;
+  --radius: 20px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 85% 0%, #252447 0, transparent 30%),
+    var(--bg);
+  color: var(--text);
+  font: 15px/1.6 Inter, system-ui, sans-serif;
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+button { cursor: pointer; }
+
+.app {
+  max-width: 1180px;
+  margin: auto;
+  padding: 28px 22px 60px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #b7a5ff, #83d7cc);
+  display: grid;
+  place-items: center;
+  color: #172033;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.brand h1 {
+  font-size: 17px;
+  letter-spacing: .14em;
+  margin: 0;
+}
+
+.brand small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.header-note {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+.hero {
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: linear-gradient(
+    120deg,
+    rgba(183,165,255,.16),
+    rgba(139,213,202,.07)
+  );
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  color: var(--accent2);
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: clamp(25px, 4vw, 36px);
+  line-height: 1.2;
+  margin: 8px 0 10px;
+}
+
+.hero p {
+  color: #c2cadd;
+  max-width: 680px;
+}
+
+.date-line {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+
+.card {
+  background: rgba(21,31,48,.92);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 21px;
+  min-width: 0;
+}
+
+.span-8 { grid-column: span 8; }
+.span-4 { grid-column: span 4; }
+.span-6 { grid-column: span 6; }
+.span-12 { grid-column: span 12; }
+
+.card h3 {
+  font-size: 16px;
+  margin: 0 0 4px;
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+
+.mood-options {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.mood-option {
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  color: var(--text);
+  border-radius: 14px;
+  padding: 12px 5px;
+}
+
+.mood-option span {
+  display: block;
+  font-size: 24px;
+}
+
+.mood-option small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.mood-option.selected {
+  border-color: var(--accent);
+  background: rgba(183,165,255,.17);
+  outline: 1px solid var(--accent);
+}
+
+.field { margin: 13px 0; }
+
+label {
+  display: block;
+  color: #c6d0e0;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+input, textarea, select {
+  width: 100%;
+  background: #101a2a;
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 11px 12px;
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 82px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 16px;
+  background: var(--accent);
+  color: #17152a;
+  font-weight: 700;
+}
+
+.btn.secondary {
+  background: #27364e;
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+
+.btn.danger {
+  background: rgba(255,157,157,.14);
+  color: var(--danger);
+  border: 1px solid rgba(255,157,157,.3);
+}
+
+.btn.full { width: 100%; }
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin-top: 16px;
+}
+
+.stat {
+  background: #101a2a;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 13px;
+}
+
+.stat strong {
+  display: block;
+  font-size: 22px;
+}
+
+.stat small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.bar-list {
+  display: grid;
+  gap: 13px;
+  margin-top: 14px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 76px 1fr 30px;
+  gap: 10px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.track {
+  height: 8px;
+  background: #29364a;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 99px;
+}
+
+.entry {
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.entry:last-child { border: 0; }
+
+.entry-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.entry p {
+  color: #bac6d8;
+  font-size: 12px;
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+}
+
+.pill {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: #27364e;
+  color: #cbd5e5;
+  font-size: 10px;
+}
+
+.checkline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.checkline input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--accent);
+}
+
+.notice {
+  border: 1px solid rgba(255,157,157,.25);
+  background: rgba(255,157,157,.07);
+  border-radius: 14px;
+  padding: 14px;
+  color: #e8caca;
+  font-size: 12px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+footer {
+  color: #8290a7;
+  font-size: 11px;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #e7e2ff;
+  color: #17152a;
+  padding: 10px 16px;
+  border-radius: 99px;
+  display: none;
+  z-index: 10;
+}
+
+@media(max-width:800px) {
+  .span-8, .span-4, .span-6 {
+    grid-column: span 12;
+  }
+  .header-note { display: none; }
+}
+
+@media(max-width:480px) {
+  .app { padding: 18px 13px 40px; }
+  .hero { padding: 22px; }
+  .card { padding: 17px; }
+  .mood-options { gap: 5px; }
+  .mood-option { padding: 9px 2px; }
+  .mood-option span { font-size: 20px; }
+  .mood-option small { font-size: 9px; }
+  .row { flex-direction: column; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <div class="brand">
+    <div class="logo">m</div>
+    <div>
+      <h1>MINDSPACE</h1>
+      <small>RUANG UNTUK MEMAHAMI DIRI</small>
+    </div>
+  </div>
+  <div class="header-note">
+    Sebuah langkah kecil tetap berarti.
+    <br><span id="today"></span>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">Your personal wellbeing space</div>
+  <h2>Kamu tidak harus memahami semuanya hari ini.</h2>
+  <p>
+    Catat apa yang kamu rasakan, amati pola dengan perlahan,
+    dan siapkan dukungan yang bisa kamu akses ketika membutuhkannya.
+  </p>
+  <div class="date-line">
+    Ruang pribadi • Tidak ada penilaian • Satu hari dalam satu waktu
+  </div>
+</section>
+
+<main class="grid">
+
+<section class="card span-8">
+  <h3>Bagaimana keadaanmu hari ini?</h3>
+  <p class="sub">
+    Pilih gambaran yang paling mendekati pengalamanmu.
+    Ini catatan pribadi, bukan pengukuran klinis.
+  </p>
+
+  <div class="mood-options" id="moodOptions">
+    <button class="mood-option" data-mood="Sangat rendah">
+      <span>🌧️</span><small>Sangat rendah</small>
+    </button>
+    <button class="mood-option" data-mood="Rendah">
+      <span>☁️</span><small>Rendah</small>
+    </button>
+    <button class="mood-option" data-mood="Stabil">
+      <span>🌤️</span><small>Stabil</small>
+    </button>
+    <button class="mood-option" data-mood="Meningkat">
+      <span>☀️</span><small>Meningkat</small>
+    </button>
+    <button class="mood-option" data-mood="Sangat meningkat">
+      <span>⚡</span><small>Sangat meningkat</small>
+    </button>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="sleep">Durasi tidur (jam)</label>
+      <input id="sleep" type="number" min="0" max="24" step=".5" placeholder="Contoh: 7.5">
+    </div>
+
+    <div class="field">
+      <label for="energy">Energi yang dirasakan (1–5)</label>
+      <select id="energy">
+        <option value="">Pilih...</option>
+        <option value="1">1 — Sangat rendah</option>
+        <option value="2">2 — Rendah</option>
+        <option value="3">3 — Sedang</option>
+        <option value="4">4 — Tinggi</option>
+        <option value="5">5 — Sangat tinggi</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="notes">Catatan hari ini (opsional)</label>
+    <textarea id="notes" placeholder="Apa yang terjadi? Adakah perubahan rutinitas, stres, atau hal yang ingin kamu ingat?"></textarea>
+  </div>
+
+  <button class="btn full" id="saveMood">
+    Simpan catatan hari ini
+  </button>
+</section>
+
+<section class="card span-4">
+  <h3>Ringkasan 7 hari</h3>
+  <p class="sub">Berdasarkan catatan di perangkat ini.</p>
+
+  <div class="stat-grid">
+    <div class="stat">
+      <strong id="daysCount">0</strong>
+      <small>Catatan</small>
+    </div>
+    <div class="stat">
+      <strong id="avgSleep">—</strong>
+      <small>Rata-rata tidur</small>
+    </div>
+    <div class="stat">
+      <strong id="avgEnergy">—</strong>
+      <small>Energi rata-rata</small>
+    </div>
+  </div>
+
+  <div class="bar-list" id="moodBars"></div>
+
+  <p class="muted" style="font-size:11px;margin-top:15px">
+    Grafik ini hanya membantu refleksi. Jangan gunakan untuk
+    mendiagnosis episode atau mengubah pengobatan.
+  </p>
+</section>
+
+<section class="card span-6">
+  <h3>Riwayat mood</h3>
+  <p class="sub">Catatan terbaru yang kamu simpan.</p>
+  <div id="history">
+    <div class="empty">Belum ada catatan.</div>
+  </div>
+</section>
+
+<section class="card span-6">
+  <h3>Jurnal singkat</h3>
+  <p class="sub">Tulis tanpa perlu membuatnya sempurna.</p>
+
+  <div class="field">
+    <label for="journalText">Apa yang sedang memenuhi pikiranmu?</label>
+    <textarea id="journalText" placeholder="Aku ingin menuliskan..."></textarea>
+  </div>
+
+  <button class="btn secondary full" id="saveJournal">
+    Simpan jurnal
+  </button>
+
+  <div id="journalHistory"></div>
+</section>
+
+<section class="card span-6">
+  <h3>Rutinitas harian</h3>
+  <p class="sub">Checklist sederhana.</p>
+
+  <div id="routineList">
+    <label class="checkline">
+      <input type="checkbox" data-routine="Bangun dan tidur sesuai rencana">
+      Bangun dan tidur sesuai rencana
+    </label>
+
+    <label class="checkline">
+      <input type="checkbox" data-routine="Makan dan minum cukup">
+      Makan dan minum cukup
+    </label>
+
+    <label class="checkline">
+      <input type="checkbox" data-routine="Aktivitas ringan">
+      Melakukan aktivitas ringan
+    </label>
+
+    <label class="checkline">
+      <input type="checkbox" data-routine="Mengikuti rencana obat dari dokter">
+      Mengikuti rencana obat dari dokter
+    </label>
+
+    <label class="checkline">
+      <input type="checkbox" data-routine="Menghubungi orang tepercaya">
+      Terhubung dengan orang tepercaya
+    </label>
+  </div>
+
+  <p class="muted" style="font-size:11px;margin-top:12px">
+    Jangan memulai, menghentikan, atau mengubah dosis obat
+    berdasarkan aplikasi ini.
+  </p>
+</section>
+
+<section class="card span-6">
+  <h3>My safety plan</h3>
+  <p class="sub">Siapkan langkah yang bisa membantu saat keadaan sulit.</p>
+
+  <div class="field">
+    <label for="warningSigns">Tanda awal yang biasanya saya sadari</label>
+    <textarea id="warningSigns" placeholder="Perubahan tidur, energi, pikiran, atau perilaku..."></textarea>
+  </div>
+
+  <div class="field">
+    <label for="coping">Hal yang biasanya membantu saya</label>
+    <textarea id="coping" placeholder="Tempat tenang, aktivitas, strategi grounding..."></textarea>
+  </div>
+
+  <div class="field">
+    <label for="contact">Orang yang bisa saya hubungi</label>
+    <textarea id="contact" placeholder="Nama orang tepercaya dan kontaknya..."></textarea>
+  </div>
+
+  <button class="btn secondary full" id="saveSafety">
+    Simpan safety plan
+  </button>
+
+  <div class="notice" style="margin-top:14px">
+    <strong>Jika kamu merasa tidak aman:</strong>
+    hubungi orang tepercaya, psikiater atau tenaga kesehatan
+    yang menangani, atau pergi ke IGD terdekat.
+    Jika ada bahaya langsung atau risiko menyakiti diri,
+    jangan sendirian dan segera cari bantuan darurat.
+  </div>
+</section>
+
+<section class="card span-12">
+  <h3>Privasi dan data</h3>
+  <p class="sub">
+    Data disimpan secara lokal di browser perangkat ini.
+    Belum ada akun, server, atau sinkronisasi cloud.
+  </p>
+
+  <div class="row">
+    <button class="btn secondary" id="exportData">
+      Unduh backup data (JSON)
+    </button>
+
+    <button class="btn danger" id="clearData">
+      Hapus seluruh data lokal
+    </button>
+  </div>
+
+  <p class="muted" style="font-size:11px">
+    File backup berisi informasi sensitif. Simpan di tempat aman.
+  </p>
+</section>
+
+</main>
+
+<footer>
+  MINDSPACE bukan layanan medis, alat diagnosis,
+  atau pengganti konsultasi profesional.
+</footer>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = "mindspace_v1";
+const todayKey = new Date().toISOString().slice(0,10);
+
+let data = loadData();
+let selectedMood = "";
+
+function loadData() {
+  try {
+    return JSON.parse(localStorage.getItem(KEY)) || {
+      moods: [],
+      journals: [],
+      safety: {}
+    };
+  } catch(e) {
+    return {moods:[], journals:[], safety:{}};
+  }
+}
+
+function persist() {
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+function toast(message) {
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.style.display = "block";
+
+  clearTimeout(window.toastTimer);
+
+  window.toastTimer = setTimeout(() => {
+    el.style.display = "none";
+  }, 2400);
+}
+
+document.getElementById("today").textContent =
+  new Intl.DateTimeFormat("id-ID", {
+    weekday:"long",
+    day:"numeric",
+    month:"long",
+    year:"numeric"
+  }).format(new Date());
+
+document.querySelectorAll(".mood-option").forEach(btn => {
+  btn.addEventListener("click", () => {
+    selectedMood = btn.dataset.mood;
+
+    document.querySelectorAll(".mood-option").forEach(b => {
+      b.classList.toggle("selected", b === btn);
+    });
+  });
+});
+
+// MOOD TRACKER
+
+document.getElementById("saveMood").addEventListener("click", () => {
+
+  if (!selectedMood) {
+    toast("Pilih gambaran mood terlebih dahulu.");
+    return;
+  }
+
+  const sleep = document.getElementById("sleep").value;
+  const energy = document.getElementById("energy").value;
+
+  if (sleep !== "" &&
+      (Number(sleep) < 0 || Number(sleep) > 24)) {
+    toast("Masukkan durasi tidur 0–24 jam.");
+    return;
+  }
+
+  const entry = {
+    date: todayKey,
+    mood: selectedMood,
+    sleep: sleep === "" ? null : Number(sleep),
+    energy: energy === "" ? null : Number(energy),
+    notes: document.getElementById("notes").value.trim()
+  };
+
+  const index = data.moods.findIndex(
+    x => x.date === todayKey
+  );
+
+  if (index >= 0) {
+    data.moods[index] = entry;
+  } else {
+    data.moods.push(entry);
+  }
+
+  persist();
+  render();
+  toast("Catatan hari ini tersimpan.");
+});
+
+// JOURNAL
+
+document.getElementById("saveJournal").addEventListener("click", () => {
+
+  const text = document.getElementById("journalText").value.trim();
+
+  if (!text) {
+    toast("Tulis beberapa kalimat terlebih dahulu.");
+    return;
+  }
+
+  data.journals.unshift({
+    date: new Date().toISOString(),
+    text
+  });
+
+  persist();
+
+  document.getElementById("journalText").value = "";
+
+  render();
+  toast("Jurnal tersimpan.");
+});
+
+// SAFETY PLAN
+
+document.getElementById("saveSafety").addEventListener("click", () => {
+
+  data.safety = {
+    warningSigns: document.getElementById("warningSigns").value,
+    coping: document.getElementById("coping").value,
+    contact: document.getElementById("contact").value
+  };
+
+  persist();
+  toast("Safety plan tersimpan.");
+});
+
+// DAILY ROUTINE
+
+document.getElementById("routineList").addEventListener("change", e => {
+
+  if (e.target.matches("input[type=checkbox]")) {
+
+    const checks = JSON.parse(
+      localStorage.getItem("mindspace_routine_" + todayKey) || "{}"
+    );
+
+    checks[e.target.dataset.routine] = e.target.checked;
+
+    localStorage.setItem(
+      "mindspace_routine_" + todayKey,
+      JSON.stringify(checks)
+    );
+  }
+});
+
+// EXPORT DATA
+
+document.getElementById("exportData").addEventListener("click", () => {
+
+  const blob = new Blob(
+    [JSON.stringify(data, null, 2)],
+    {type:"application/json"}
+  );
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = "mindspace-backup-" + todayKey + ".json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+});
+
+// DELETE DATA
+
+document.getElementById("clearData").addEventListener("click", () => {
+
+  if (!confirm("Hapus semua catatan mood, jurnal, dan safety plan?")) {
+    return;
+  }
+
+  localStorage.removeItem(KEY);
+
+  Object.keys(localStorage)
+    .filter(k => k.startsWith("mindspace_routine_"))
+    .forEach(k => localStorage.removeItem(k));
+
+  data = {
+    moods:[],
+    journals:[],
+    safety:{}
+  };
+
+  render();
+  toast("Data lokal telah dihapus.");
+});
+
+// SECURITY: ESCAPE USER INPUT
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[c]));
+}
+
+function formatDate(s) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day:"numeric",
+    month:"short",
+    year:"numeric"
+  }).format(new Date(s + "T12:00:00"));
+}
+
+// RENDER DASHBOARD
+
+function render() {
+
+  const recent = [...data.moods]
+    .sort((a,b) => b.date.localeCompare(a.date))
+    .slice(0,7);
+
+  document.getElementById("daysCount").textContent =
+    recent.length;
+
+  const sleeps = recent
+    .filter(x => x.sleep !== null)
+    .map(x => x.sleep);
+
+  const energies = recent
+    .filter(x => x.energy !== null)
+    .map(x => x.energy);
+
+  document.getElementById("avgSleep").textContent =
+    sleeps.length
+      ? (sleeps.reduce((a,b) => a+b,0)/sleeps.length).toFixed(1)
+      : "—";
+
+  document.getElementById("avgEnergy").textContent =
+    energies.length
+      ? (energies.reduce((a,b) => a+b,0)/energies.length).toFixed(1)
+      : "—";
+
+  const moods = [
+    "Sangat rendah",
+    "Rendah",
+    "Stabil",
+    "Meningkat",
+    "Sangat meningkat"
+  ];
+
+  const counts = moods.map(m =>
+    recent.filter(x => x.mood === m).length
+  );
+
+  document.getElementById("moodBars").innerHTML =
+    moods.map((m,i) => `
+      <div class="bar-row">
+        <span>${m}</span>
+        <div class="track">
+          <div class="fill"
+            style="width:${counts[i]/Math.max(recent.length,1)*100}%">
+          </div>
+        </div>
+        <b>${counts[i]}</b>
+      </div>
+    `).join("");
+
+  const history = document.getElementById("history");
+
+  history.innerHTML = recent.length
+    ? recent.map(x => `
+      <div class="entry">
+        <div class="entry-top">
+          <strong>${escapeHTML(x.mood)}</strong>
+          <span class="pill">${formatDate(x.date)}</span>
+        </div>
+        <p>
+          Tidur: ${x.sleep === null ? "—" : x.sleep+" jam"}
+          · Energi: ${x.energy === null ? "—" : x.energy+"/5"}
+        </p>
+        ${x.notes ? `<p>${escapeHTML(x.notes)}</p>` : ""}
+      </div>
+    `).join("")
+    : '<div class="empty">Belum ada catatan.</div>';
+
+  document.getElementById("journalHistory").innerHTML =
+    data.journals.slice(0,3).map(j => `
+      <div class="entry">
+        <div class="entry-top">
+          <span class="pill">
+            ${new Date(j.date).toLocaleString("id-ID")}
+          </span>
+        </div>
+        <p>${escapeHTML(j.text)}</p>
+      </div>
+    `).join("");
+
+  document.getElementById("warningSigns").value =
+    data.safety.warningSigns || "";
+
+  document.getElementById("coping").value =
+    data.safety.coping || "";
+
+  document.getElementById("contact").value =
+    data.safety.contact || "";
+
+  const routine = JSON.parse(
+    localStorage.getItem("mindspace_routine_" + todayKey) || "{}"
+  );
+
+  document.querySelectorAll("#routineList input").forEach(c => {
+    c.checked = !!routine[c.dataset.routine];
+  });
+
+  const today = data.moods.find(x => x.date === todayKey);
+
+  if (today) {
+    selectedMood = today.mood;
+
+    document.querySelectorAll(".mood-option").forEach(b => {
+      b.classList.toggle(
+        "selected",
+        b.dataset.mood === selectedMood
+      );
+    });
+
+    document.getElementById("sleep").value =
+      today.sleep ?? "";
+
+    document.getElementById("energy").value =
+      today.energy ?? "";
+
+    document.getElementById("notes").value =
+      today.notes || "";
+  }
+}
+
+render();
+</script>
+
+</body>
+</html>
