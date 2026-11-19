@@ -589,31 +589,107 @@ function emptyData() {
   };
 }
 
+
 function loadData() {
-  try {
-    const current = localStorage.getItem(STORAGE_KEY);
-    if(current) {
-      const parsed = JSON.parse(current);
-      return {...emptyData(),...parsed};
+    const STORAGE_KEY = "mindspace_v2";
+    const OLD_STORAGE_KEY = "mindspace_v1";
+
+    function emptyData() {
+        return {
+            moods: [],
+            medications: [],
+            medicationLogs: [],
+            journals: [],
+            routines: {},
+            safety: {},
+            settings: {}
+        };
     }
 
-    // Migrate existing V1 records.
-    const old = localStorage.getItem(OLD_KEY);
-    if(old) {
-      const parsed = JSON.parse(old);
-      const migrated = {
-        ...emptyData(),
-        moods:Array.isArray(parsed.moods)?parsed.moods:[],
-        journals:Array.isArray(parsed.journals)?parsed.journals:[],
-        safety:parsed.safety || {}
-      };
-      localStorage.setItem(STORAGE_KEY,JSON.stringify(migrated));
-      return migrated;
+    try {
+        // 1. Coba membaca data V2
+        const currentData = localStorage.getItem(STORAGE_KEY);
+
+        if (currentData) {
+            const parsed = JSON.parse(currentData);
+            const defaults = emptyData();
+
+            return {
+                ...defaults,
+                ...parsed,
+                moods: parsed.moods || [],
+                medications: parsed.medications || [],
+                medicationLogs: parsed.medicationLogs || [],
+                journals: parsed.journals || [],
+                routines: parsed.routines || {},
+                safety: parsed.safety || {},
+                settings: parsed.settings || {}
+            };
+        }
+
+        // 2. Jika V2 belum ada, coba migrasi data V1
+        const oldData = localStorage.getItem(OLD_STORAGE_KEY);
+
+        if (oldData) {
+            const old = JSON.parse(oldData);
+            const migrated = emptyData();
+
+            migrated.moods = old.moods || [];
+            migrated.journals = old.journals || [];
+            migrated.safety = old.safety || {};
+
+            // 3. Migrasi checklist rutinitas dari V1
+            const routineLabels = [
+                "Bangun dan tidur sesuai rencana",
+                "Makan dan minum cukup",
+                "Aktivitas ringan",
+                "Mengikuti rencana obat dari dokter",
+                "Menghubungi orang tepercaya"
+            ];
+
+            Object.keys(localStorage)
+                .filter(key => key.startsWith("mindspace_routine_"))
+                .forEach(key => {
+                    const date = key.replace(
+                        "mindspace_routine_",
+                        ""
+                    );
+
+                    try {
+                        const oldRoutine = JSON.parse(
+                            localStorage.getItem(key)
+                        );
+
+                        migrated.routines[date] = {};
+
+                        routineLabels.forEach((label, index) => {
+                            migrated.routines[date][index] =
+                                !!oldRoutine[label];
+                        });
+                    } catch (error) {
+                        console.warn(
+                            "Routine migration skipped:",
+                            date
+                        );
+                    }
+                });
+
+            // 4. Simpan hasil migrasi sebagai data V2
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(migrated)
+            );
+
+            return migrated;
+        }
+
+        // 5. Jika belum ada data, gunakan data kosong
+        return emptyData();
+
+    } catch (error) {
+        console.error("Mindspace data loading error:", error);
+        return emptyData();
     }
-  } catch(e) {
-    console.error("Data loading error:",e);
-  }
-  return emptyData();
 }
 
 let data = loadData();
