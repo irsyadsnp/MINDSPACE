@@ -1288,6 +1288,451 @@ function updateDate() {
 updateDate();
 setInterval(updateDate,30000);
 refreshAll();
+
+/* ==========================================
+   MINDSPACE V3 — PERSONAL INSIGHT MODULE
+   Compatible with existing mindspace_v2 data
+========================================== */
+
+(function initMindspaceV3() {
+  const sidebar = document.querySelector(".sidebar");
+  const analyticsPage = document.getElementById("page-analytics");
+
+  if (!sidebar || !analyticsPage) return;
+
+  // 1. Add calendar navigation
+  const calendarButton = document.createElement("button");
+  calendarButton.className = "nav-btn";
+  calendarButton.dataset.page = "calendar";
+  calendarButton.innerHTML =
+    '<span class="nav-icon">▦</span><span>Mood Calendar</span>';
+
+  const resourceTitle = [...sidebar.querySelectorAll(".nav-title")]
+    .find(el => el.textContent.trim() === "RESOURCES");
+
+  if (resourceTitle) {
+    sidebar.insertBefore(calendarButton, resourceTitle);
+  } else {
+    sidebar.appendChild(calendarButton);
+  }
+
+  // 2. Add calendar page
+  const calendarPage = document.createElement("section");
+  calendarPage.className = "page";
+  calendarPage.id = "page-calendar";
+
+  calendarPage.innerHTML = `
+    <div class="hero glass">
+      <div class="eyebrow">MONTHLY MOOD OVERVIEW</div>
+      <h2>Your mood calendar.</h2>
+      <p class="muted">
+        Lihat riwayat mood berdasarkan tanggal.
+        Pilih tanggal untuk melihat catatan.
+      </p>
+    </div>
+
+    <div class="card glass">
+      <div class="row">
+        <button class="btn secondary small" id="calPrev">←</button>
+        <h3 id="calMonth" style="text-align:center">Month</h3>
+        <button class="btn secondary small" id="calNext">→</button>
+      </div>
+
+      <div id="moodCalendar"
+        style="display:grid;grid-template-columns:repeat(7,1fr);
+        gap:7px;margin-top:18px"></div>
+
+      <div id="calendarDetail" class="knowledge"
+        style="margin-top:18px">
+        Pilih tanggal untuk melihat detail.
+      </div>
+    </div>
+
+    <div class="card glass" style="margin-top:15px">
+      <h3>Mood legend</h3>
+      <p class="sub">
+        Indikator menunjukkan kategori yang dicatat,
+        bukan penilaian klinis.
+      </p>
+      <div class="row" style="flex-wrap:wrap">
+        <span>🔴 Sangat rendah</span>
+        <span>🟠 Rendah</span>
+        <span>🟢 Stabil</span>
+        <span>🔵 Meningkat</span>
+        <span>🟣 Sangat meningkat</span>
+      </div>
+    </div>
+  `;
+
+  document.querySelector(".content").appendChild(calendarPage);
+
+  // 3. Add analytics options
+  const range = document.getElementById("analyticsRange");
+
+  if (range && ![...range.options].some(o => o.value === "180")) {
+    range.add(new Option("180 days", "180"));
+  }
+
+  // 4. Add insight panels
+  const insightContainer = document.createElement("div");
+
+  insightContainer.className = "grid";
+  insightContainer.style.marginTop = "15px";
+
+  insightContainer.innerHTML = `
+    <div class="card glass span-6">
+      <h3>Sleep & mood relationship</h3>
+      <p class="sub">
+        Korelasi deskriptif berdasarkan catatan yang tersedia.
+      </p>
+      <div id="sleepMoodInsight" class="empty"></div>
+    </div>
+
+    <div class="card glass span-6">
+      <h3>Energy & mood relationship</h3>
+      <p class="sub">
+        Perbandingan energi dan kategori mood.
+      </p>
+      <div id="energyMoodInsight" class="empty"></div>
+    </div>
+
+    <div class="card glass span-12">
+      <h3>Recent pattern observation</h3>
+      <p class="sub">
+        Perbandingan dua periode 14 hari.
+      </p>
+      <div id="patternInsight" class="empty"></div>
+    </div>
+
+    <div class="card glass span-12">
+      <h3>Medication recording overview</h3>
+      <p class="sub">
+        Ringkasan pencatatan status obat, bukan bukti bahwa obat
+        benar-benar diminum.
+      </p>
+      <div id="adherenceInsight" class="empty"></div>
+    </div>
+  `;
+
+  analyticsPage.appendChild(insightContainer);
+
+  // 5. Calendar engine
+  let calendarDate = new Date();
+  let selectedCalendarDate = null;
+
+  const moodColors = {
+    "Sangat rendah": "#ff7777",
+    "Rendah": "#f0ad73",
+    "Stabil": "#91dfce",
+    "Meningkat": "#82b8ff",
+    "Sangat meningkat": "#b7a5ff"
+  };
+
+  function renderCalendar() {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+
+    document.getElementById("calMonth").textContent =
+      calendarDate.toLocaleDateString("id-ID", {
+        month: "long",
+        year: "numeric"
+      });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const mondayOffset = (firstDay + 6) % 7;
+
+    const calendar = document.getElementById("moodCalendar");
+
+    const weekdays = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+
+    let html = weekdays.map(day => `
+      <div style="text-align:center;color:var(--muted);
+        font-size:11px;padding:7px 0">${day}</div>
+    `).join("");
+
+    for (let i = 0; i < mondayOffset; i++) {
+      html += "<div></div>";
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date =
+        `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+      const entry = data.moods.find(x => x.date === date);
+      const color = entry ? moodColors[entry.mood] : "transparent";
+
+      html += `
+        <button type="button"
+          data-calendar-date="${date}"
+          style="
+            min-height:49px;
+            border-radius:12px;
+            border:1px solid var(--border);
+            color:var(--text);
+            background:rgba(255,255,255,.035);
+            position:relative;
+            padding:5px;
+          ">
+          ${day}
+          <span style="
+            display:block;
+            width:7px;height:7px;
+            border-radius:50%;
+            background:${color};
+            margin:4px auto 0;
+          "></span>
+        </button>
+      `;
+    }
+
+    calendar.innerHTML = html;
+
+    calendar.querySelectorAll("[data-calendar-date]")
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          selectedCalendarDate = button.dataset.calendarDate;
+          renderCalendarDetail();
+        });
+      });
+  }
+
+  function renderCalendarDetail() {
+    const entry = data.moods.find(
+      x => x.date === selectedCalendarDate
+    );
+
+    const detail = document.getElementById("calendarDetail");
+
+    if (!entry) {
+      detail.innerHTML = `
+        <strong>${formatDate(selectedCalendarDate)}</strong>
+        <p class="muted">Tidak ada catatan mood pada tanggal ini.</p>
+      `;
+      return;
+    }
+
+    detail.innerHTML = `
+      <strong>${formatDate(entry.date)}</strong>
+      <p>Mood: ${esc(entry.mood)}</p>
+      <p>Sleep: ${entry.sleep ?? "—"} jam</p>
+      <p>Sleep quality: ${entry.sleepQuality ?? "—"}/5</p>
+      <p>Energy: ${entry.energy ?? "—"}/5</p>
+      ${entry.notes ? `<p>${esc(entry.notes)}</p>` : ""}
+    `;
+  }
+
+  document.getElementById("calPrev").addEventListener("click", () => {
+    calendarDate.setMonth(calendarDate.getMonth() - 1);
+    renderCalendar();
+  });
+
+  document.getElementById("calNext").addEventListener("click", () => {
+    calendarDate.setMonth(calendarDate.getMonth() + 1);
+    renderCalendar();
+  });
+
+  // 6. Pearson correlation helper
+  function pearsonCorrelation(x, y) {
+    if (x.length < 5 || x.length !== y.length) return null;
+
+    const meanX = x.reduce((a, b) => a + b, 0) / x.length;
+    const meanY = y.reduce((a, b) => a + b, 0) / y.length;
+
+    let numerator = 0;
+    let sumX = 0;
+    let sumY = 0;
+
+    for (let i = 0; i < x.length; i++) {
+      const dx = x[i] - meanX;
+      const dy = y[i] - meanY;
+
+      numerator += dx * dy;
+      sumX += dx * dx;
+      sumY += dy * dy;
+    }
+
+    const denominator = Math.sqrt(sumX * sumY);
+
+    return denominator === 0 ? null : numerator / denominator;
+  }
+
+  function correlationText(r) {
+    if (r === null) return "Belum cukup data (minimal 5 pasangan).";
+
+    let description = "Sangat lemah";
+
+    if (Math.abs(r) >= 0.7) description = "Kuat";
+    else if (Math.abs(r) >= 0.4) description = "Sedang";
+    else if (Math.abs(r) >= 0.2) description = "Lemah";
+
+    const direction = r > 0 ? "positif" : r < 0 ? "negatif" : "nol";
+
+    return `
+      <strong>r = ${r.toFixed(2)}</strong>
+      <p>${description}, arah ${direction}.</p>
+      <p class="muted">
+        Korelasi tidak membuktikan hubungan sebab-akibat.
+      </p>
+    `;
+  }
+
+  // 7. Pattern comparison
+  function renderV3Insights() {
+    const days = Number(range.value);
+    const entries = getPeriod(days);
+
+    const sleepPairs = entries.filter(
+      x => Number.isFinite(x.sleep) &&
+           moodValues[x.mood] !== undefined
+    );
+
+    const energyPairs = entries.filter(
+      x => Number.isFinite(x.energy) &&
+           moodValues[x.mood] !== undefined
+    );
+
+    const sleepR = pearsonCorrelation(
+      sleepPairs.map(x => x.sleep),
+      sleepPairs.map(x => moodValues[x.mood])
+    );
+
+    const energyR = pearsonCorrelation(
+      energyPairs.map(x => x.energy),
+      energyPairs.map(x => moodValues[x.mood])
+    );
+
+    document.getElementById("sleepMoodInsight").innerHTML =
+      correlationText(sleepR) +
+      `<p class="muted">${sleepPairs.length} pasangan data.</p>`;
+
+    document.getElementById("energyMoodInsight").innerHTML =
+      correlationText(energyR) +
+      `<p class="muted">${energyPairs.length} pasangan data.</p>`;
+
+    const now = new Date();
+    const cutoff = new Date(now);
+    cutoff.setDate(cutoff.getDate() - 13);
+
+    const previousCutoff = new Date(cutoff);
+    previousCutoff.setDate(previousCutoff.getDate() - 14);
+
+    const recentStart = localDate(cutoff);
+    const previousStart = localDate(previousCutoff);
+
+    const recent = data.moods.filter(
+      x => x.date >= recentStart && x.date <= TODAY
+    );
+
+    const previous = data.moods.filter(
+      x => x.date >= previousStart && x.date < recentStart
+    );
+
+    const averageMood = list => {
+      const values = list
+        .map(x => moodValues[x.mood])
+        .filter(Number.isFinite);
+
+      return values.length
+        ? values.reduce((a, b) => a + b, 0) / values.length
+        : null;
+    };
+
+    const recentAvg = averageMood(recent);
+    const previousAvg = averageMood(previous);
+
+    let patternText = "Belum cukup data untuk membandingkan pola.";
+
+    if (recent.length >= 5 && previous.length >= 5) {
+      const difference = recentAvg - previousAvg;
+
+      patternText = `
+        <p>14 hari terakhir: ${recentAvg.toFixed(2)} / 5</p>
+        <p>14 hari sebelumnya: ${previousAvg.toFixed(2)} / 5</p>
+        <p>
+          Perbedaan rata-rata:
+          ${difference > 0 ? "+" : ""}${difference.toFixed(2)}
+        </p>
+        <p class="muted">
+          Ini hanya perbandingan numerik kategori mood yang dicatat.
+          Bukan deteksi episode atau penilaian kondisi klinis.
+        </p>
+      `;
+    }
+
+    document.getElementById("patternInsight").innerHTML = patternText;
+
+    // Medication recording summary
+    const activeMeds = data.medications.filter(
+      x => x.active !== false
+    );
+
+    const logs = data.medicationLogs.filter(
+      x => x.date >= recentStart &&
+           x.date <= TODAY &&
+           activeMeds.some(m => m.id === x.id)
+    );
+
+    const taken = logs.filter(
+      x => x.status === "Dicatat diminum"
+    ).length;
+
+    const missed = logs.filter(
+      x => x.status === "Terlewat / tidak diminum"
+    ).length;
+
+    document.getElementById("adherenceInsight").innerHTML = `
+      <div class="stat-grid">
+        <div class="stat">
+          <strong>${logs.length}</strong>
+          <small>Total pencatatan</small>
+        </div>
+        <div class="stat">
+          <strong>${taken}</strong>
+          <small>Dicatat diminum</small>
+        </div>
+        <div class="stat">
+          <strong>${missed}</strong>
+          <small>Dicatat terlewat</small>
+        </div>
+      </div>
+      <p class="muted" style="margin-top:12px">
+        Periode 14 hari terakhir. Catatan yang kosong tidak
+        dapat dianggap sebagai obat yang diminum atau terlewat.
+      </p>
+    `;
+  }
+
+  // 8. Extend existing analytics rendering
+  const originalRenderAnalytics = renderAnalytics;
+
+  renderAnalytics = function() {
+    originalRenderAnalytics();
+    renderV3Insights();
+  };
+
+  // 9. Extend navigation
+  calendarButton.addEventListener("click", () => {
+    showPage("calendar");
+  });
+
+  // 10. Update refresh function
+  const originalRefreshAll = refreshAll;
+
+  refreshAll = function() {
+    originalRefreshAll();
+    renderCalendar();
+    renderV3Insights();
+  };
+
+  // Initialize
+  renderCalendar();
+  renderV3Insights();
+
+  console.log("MINDSPACE V3 module initialized.");
+})();
+
 </script>
 </body>
 </html>
